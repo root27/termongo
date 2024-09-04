@@ -58,9 +58,8 @@ func layout(g *gocui.Gui) error {
 		v.Title = "Collections"
 		v.Wrap = true
 		v.Frame = true
-
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorRed
+		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 
 		for _, c := range colls {

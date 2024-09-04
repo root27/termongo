@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	host   string
-	client *mongoClient
-	colls  []string
-	dbName string
+	host     string
+	client   *mongoClient
+	colls    []string
+	dbName   string
+	collName string
 )
 
 func main() {
@@ -53,9 +54,9 @@ func main() {
 		log.Panicln(err)
 	}
 
-	defer g.Close()
-
 	g.Cursor = true
+
+	defer g.Close()
 
 	g.SetManagerFunc(layout)
 
@@ -79,6 +80,9 @@ func main() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("query", gocui.KeyEnter, gocui.ModNone, execute); err != nil {
+		log.Panicln(err)
+	}
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
