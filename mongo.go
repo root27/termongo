@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 	"time"
 )
 
@@ -106,16 +107,22 @@ func (c *mongoClient) findOne(collection string, filter string) ([]byte, error) 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	var filt bson.D
+	var mongoFilter bson.D
 
-	if err := bson.UnmarshalExtJSON([]byte(filter), true, &filt); err != nil {
+	subStrings := strings.Split(filter, ",")
 
-		return nil, err
+	for i, s := range subStrings {
+
+		if i == len(subStrings)-1 {
+			continue
+		}
+
+		mongoFilter = append(mongoFilter, bson.E{s, subStrings[i+1]})
 	}
 
 	// Find one document in the collection
 	var result bson.M
-	err := c.Database(dbName).Collection(collection).FindOne(ctx, filt).Decode(&result)
+	err := c.Database(dbName).Collection(collection).FindOne(ctx, &mongoFilter).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
