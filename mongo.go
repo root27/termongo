@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 	"time"
 )
 
@@ -107,22 +106,13 @@ func (c *mongoClient) findOne(collection string, filter string) ([]byte, error) 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	var mongoFilter bson.D
+	var mongoFilter bson.M
 
-	subStrings := strings.Split(filter, ",")
-
-	for i, s := range subStrings {
-
-		if i == len(subStrings)-1 {
-			continue
-		}
-
-		mongoFilter = append(mongoFilter, bson.E{s, subStrings[i+1]})
-	}
+	json.Unmarshal([]byte(filter), &mongoFilter)
 
 	// Find one document in the collection
 	var result bson.M
-	err := c.Database(dbName).Collection(collection).FindOne(ctx, &mongoFilter).Decode(&result)
+	err := c.Database(dbName).Collection(collection).FindOne(ctx, mongoFilter).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -134,4 +124,45 @@ func (c *mongoClient) findOne(collection string, filter string) ([]byte, error) 
 	}
 
 	return data, nil
+}
+
+func (c *mongoClient) findOneAndUpdate(collection string, filter string, update string) ([]byte, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var mongoFilter bson.M
+	json.Unmarshal([]byte(filter), &mongoFilter)
+	var mongoUpdate bson.M
+	json.Unmarshal([]byte(update), &mongoUpdate)
+	// Find one document in the collection and update it
+
+	var updateResult bson.M
+	err := c.Database(dbName).Collection(collection).FindOneAndUpdate(ctx, mongoFilter, mongoUpdate,
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&updateResult)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.MarshalIndent(updateResult, "", "  ")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+
+}
+
+func (c *mongoClient) insertOne(collection string, document string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var mongoDocument bson.M
+	json.Unmarshal([]byte(document), &mongoDocument)
+	// Insert one document into the collection
+	_, err := c.Database(dbName).Collection(collection).InsertOne(ctx, mongoDocument)
+	if err != nil {
+		return nil, err
+	}
+	return []byte("Document inserted successfully"), nil
 }

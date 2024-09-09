@@ -12,6 +12,7 @@ var (
 	colls    []string
 	dbName   string
 	collName string
+	filter   string
 )
 
 func main() {
@@ -83,6 +84,19 @@ func main() {
 	if err := g.SetKeybinding("query", gocui.KeyEnter, gocui.ModNone, execute); err != nil {
 		log.Panicln(err)
 	}
+
+	if err := g.SetKeybinding("filter", gocui.KeyEnter, gocui.ModNone, readFilter); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("update", gocui.KeyEnter, gocui.ModNone, readUpdate); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("insertOne", gocui.KeyEnter, gocui.ModNone, insertOne); err != nil {
+		log.Panicln(err)
+	}
+
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}

@@ -92,6 +92,7 @@ func layout(g *gocui.Gui) error {
 		v.Title = "Results"
 		v.Wrap = true
 		v.Frame = true
+		v.Autoscroll = true
 	}
 
 	return nil

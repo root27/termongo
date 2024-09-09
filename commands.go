@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/jroimartin/gocui"
-	"regexp"
 	"strings"
 )
 
@@ -100,25 +99,137 @@ func execute(g *gocui.Gui, v *gocui.View) error {
 
 	case "findOne":
 
-		re := regexp.MustCompile(`findOne\((.*)\)`)
+		termWidth, termHeight := g.Size()
 
-		// Find the matching part
-		matches := re.FindStringSubmatch(query)
-		documents, _ := client.findOne(collName, matches[1])
+		if v, err := g.SetView("filter", 0, 0, termWidth-1, termHeight-1); err != nil {
 
-		view, _ := g.View("results")
-		view.Clear()
-		fmt.Fprintf(view, "Query: %s\n", query)
+			if err != gocui.ErrUnknownView {
+				return err
+			}
 
-		fmt.Fprintf(view, "Command: %s\n", command)
+			v.Title = `Filter ( e.g. {"name":"joe"} ) `
+			v.Editable = true
 
-		fmt.Fprintf(view, "Collection: %s\n", collName)
+			_, err = g.SetCurrentView("filter")
 
-		fmt.Fprintf(view, "Results: %v\n", string(documents))
+		}
+
+	case "findOneAndUpdate":
+		termwidth, termheight := g.Size()
+
+		if v, err := g.SetView("update", 0, 0, termwidth-1, termheight-1); err != nil {
+			if err != gocui.ErrUnknownView {
+				return err
+			}
+			v.Title = `Update (e.g. {"$set":{"name":"joe"}}`
+			v.Editable = true
+		}
+		if v, err := g.SetView("filter", 0, 0, termwidth-1, termheight-1); err != nil {
+
+			if err != gocui.ErrUnknownView {
+				return err
+
+			}
+
+			v.Title = `Filter ( e.g. {"name":"joe"} ) `
+			v.Editable = true
+
+			_, _ = g.SetCurrentView("filter")
+
+		}
+
+	case "insertOne":
+
+		termwidth, termheight := g.Size()
+
+		if v, err := g.SetView("insertOne", 0, 0, termwidth-1, termheight-1); err != nil {
+			if err != gocui.ErrUnknownView {
+
+				return err
+
+			}
+
+			v.Title = "Insert Document"
+			v.Editable = true
+			_, _ = g.SetCurrentView("insertOne")
+		}
 
 	}
 	return nil
 
+}
+func readFilter(g *gocui.Gui, v *gocui.View) error {
+	filt, _ := v.Line(0)
+
+	filter = filt
+
+	if _, err := g.View("update"); err != nil {
+
+		_ = g.DeleteView("filter")
+
+		_, _ = g.SetCurrentView("query")
+		documents, _ := client.findOne(collName, filter)
+
+		view, _ := g.View("results")
+		view.Clear()
+		fmt.Fprintf(view, "Filter: %s\n", filter)
+		fmt.Fprintf(view, "Collection: %s\n", collName)
+		fmt.Fprintf(view, "Results: %v\n", string(documents))
+		return nil
+
+	}
+
+	_ = g.DeleteView("filter")
+	_, _ = g.SetCurrentView("update")
+
+	return nil
+}
+
+func insertOne(g *gocui.Gui, v *gocui.View) error {
+
+	document := v.Buffer()
+
+	response, _ := client.insertOne(collName, document)
+
+	_ = g.DeleteView("insertOne")
+
+	_, _ = g.SetCurrentView("query")
+
+	resultView, _ := g.View("results")
+
+	resultView.Clear()
+
+	fmt.Fprintf(resultView, "Result: %v\n", string(response))
+
+	return nil
+
+}
+
+func readUpdate(g *gocui.Gui, v *gocui.View) error {
+	update, _ := v.Line(0)
+	updateRes, err := client.findOneAndUpdate(collName, filter, update)
+
+	_ = g.DeleteView("update")
+
+	_, _ = g.SetCurrentView("query")
+	if err != nil {
+
+		resultView, _ := g.View("results")
+
+		resultView.Clear()
+
+		fmt.Fprintf(resultView, "Error: %v\n", err)
+
+		return nil
+	}
+
+	resultView, _ := g.View("results")
+
+	resultView.Clear()
+
+	fmt.Fprintf(resultView, "Update Result: %s\n", string(updateRes))
+
+	return nil
 }
 
 func nextView(g *gocui.Gui, v *gocui.View) error {
