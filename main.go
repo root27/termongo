@@ -97,6 +97,24 @@ func main() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("results", gocui.KeyArrowUp, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+
+		scrollView(v, -1)
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+
+	}
+
+	if err := g.SetKeybinding("results", gocui.KeyArrowDown, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
+
+		scrollView(v, 1)
+		return nil
+	}); err != nil {
+		log.Panicln(err)
+
+	}
+
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}

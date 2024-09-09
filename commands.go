@@ -239,9 +239,36 @@ func nextView(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if v.Name() == "query" {
+
+		resultView, _ := g.View("results")
+
+		if resultView.Buffer() != "" {
+			_, err := g.SetCurrentView("results")
+			return err
+		}
+
 		_, err := g.SetCurrentView("collections")
 		return err
 	}
 
+	if v.Name() == "results" {
+
+		_, err := g.SetCurrentView("collections")
+
+		return err
+
+	}
+
+	return nil
+}
+
+func scrollView(v *gocui.View, dy int) error {
+	if v != nil {
+		v.Autoscroll = false
+		ox, oy := v.Origin()
+		if err := v.SetOrigin(ox, oy+dy); err != nil {
+			return err
+		}
+	}
 	return nil
 }
