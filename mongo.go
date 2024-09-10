@@ -166,3 +166,16 @@ func (c *mongoClient) insertOne(collection string, document string) ([]byte, err
 	}
 	return []byte("Document inserted successfully"), nil
 }
+
+func (c *mongoClient) deleteOne(collection string, filter string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var mongoFilter bson.M
+	json.Unmarshal([]byte(filter), &mongoFilter)
+	// Delete one document from the collection
+	_, err := c.Database(dbName).Collection(collection).DeleteOne(ctx, mongoFilter)
+	if err != nil {
+		return nil, err
+	}
+	return []byte("Document deleted successfully"), nil
+}

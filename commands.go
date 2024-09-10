@@ -154,10 +154,46 @@ func execute(g *gocui.Gui, v *gocui.View) error {
 			_, _ = g.SetCurrentView("insertOne")
 		}
 
+	case "deleteOne":
+
+		termWidth, termHeight := g.Size()
+
+		if v, err := g.SetView("deleteFilter", 0, 0, termWidth-1, termHeight-1); err != nil {
+
+			if err != gocui.ErrUnknownView {
+				return err
+			}
+
+			v.Title = `Filter ( e.g. {"name":"joe"} ) `
+			v.Editable = true
+
+			_, err = g.SetCurrentView("deleteFilter")
+
+		}
 	}
 	return nil
 
 }
+
+func deleteFilter(g *gocui.Gui, v *gocui.View) error {
+
+	filt, _ := v.Line(0)
+
+	_ = g.DeleteView("deleteFilter")
+
+	_, _ = g.SetCurrentView("query")
+
+	result, _ := client.deleteOne(collName, filt)
+
+	view, _ := g.View("results")
+
+	view.Clear()
+
+	fmt.Fprintf(view, "Result: %s", string(result))
+
+	return nil
+}
+
 func readFilter(g *gocui.Gui, v *gocui.View) error {
 	filt, _ := v.Line(0)
 

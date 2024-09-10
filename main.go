@@ -89,6 +89,10 @@ func main() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("deleteFilter", gocui.KeyEnter, gocui.ModNone, deleteFilter); err != nil {
+		log.Panicln(err)
+	}
+
 	if err := g.SetKeybinding("update", gocui.KeyEnter, gocui.ModNone, readUpdate); err != nil {
 		log.Panicln(err)
 	}
