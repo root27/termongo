@@ -12,6 +12,33 @@ This is simple mongoDB management tool using terminal in golang
 | `insertOne()` | Insert new document to the selected collection|
 | `deleteOne()`| Delete the document with specified filter|
 
+## Installation
+
+The alternatives you can find below;
+
+### Homebrew Installation
+
+```code
+
+brew tap root27/tools
+
+brew install termongo
+
+```
+
+or
+
+```code
+
+brew install root27/tools/termongo
+
+```
+
+### Releases
+
+You can find the [binary releases](https://github.com/root27/termongo/releases) to install
+
+
 ## Usage
 
 ```code
