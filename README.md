@@ -12,4 +12,10 @@ This is simple mongoDB management tool using terminal in golang
 | `insertOne()` | Insert new document to the selected collection|
 | `deleteOne()`| Delete the document with specified filter|
 
+## Usage
 
+```code
+
+./termongo -host [hostname] -db [database name]
+
+```
