@@ -10,7 +10,7 @@ version: 2
 
 
 builds:
-  - main: ./main.go
+  -
     binary: termongo 
     env:
       - CGO_ENABLED=0
